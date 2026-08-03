@@ -2,7 +2,8 @@ import { neon } from '@neondatabase/serverless'
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const PHONE_PATTERN = /^\+55\d{10,11}$/
-const ALLOWED_PRODUCTS = new Set(['kit-preco-certo', 'descubra-seu-lucro'])
+const PRODUCT_ID = 'descubra-seu-lucro'
+const DEFAULT_DATABASE_NAME = 'leads_descubra_seu_lucro'
 let tableInitialization
 
 function parseBody(body) {
@@ -32,12 +33,18 @@ function respond(response, status, body) {
 }
 
 function getDatabaseUrl() {
-  return (
+  const databaseUrl =
+    process.env.LEADS_DATABASE_URL ||
     process.env.DATABASE_URL ||
     process.env.POSTGRES_URL ||
     process.env.DATABASE_URL_UNPOOLED ||
     process.env.POSTGRES_URL_NON_POOLING
-  )
+
+  if (!databaseUrl || process.env.LEADS_DATABASE_URL) return databaseUrl
+
+  const url = new URL(databaseUrl)
+  url.pathname = `/${process.env.LEADS_DATABASE_NAME || DEFAULT_DATABASE_NAME}`
+  return url.toString()
 }
 
 async function saveToNeon(payload, databaseUrl) {
@@ -50,7 +57,7 @@ async function saveToNeon(payload, databaseUrl) {
         name VARCHAR(120) NOT NULL,
         email VARCHAR(254) NOT NULL,
         phone VARCHAR(16) NOT NULL,
-        product_id VARCHAR(80) NOT NULL,
+        product_id VARCHAR(80) NOT NULL CHECK (product_id = 'descubra-seu-lucro'),
         product_name VARCHAR(120),
         page_url TEXT,
         cta_source VARCHAR(50),
@@ -137,7 +144,7 @@ export default async function handler(request, response) {
     name.length < 2 ||
     !EMAIL_PATTERN.test(email) ||
     !PHONE_PATTERN.test(phone) ||
-    !ALLOWED_PRODUCTS.has(productId)
+    productId !== PRODUCT_ID
   ) {
     return respond(response, 400, { error: 'Confira os dados informados.' })
   }

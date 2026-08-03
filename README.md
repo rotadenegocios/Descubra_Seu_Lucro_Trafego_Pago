@@ -18,10 +18,10 @@ npm run build
 ## Publicar na Vercel
 
 1. Use esta pasta como a raiz do novo projeto.
-2. Configure `DATABASE_URL` com a conexão do Neon. Como alternativa, configure `LEADS_WEBHOOK_URL` e, se necessário, `LEADS_WEBHOOK_TOKEN`.
+2. Configure `DATABASE_URL` com a conexão do Neon. A API direciona essa conexão ao banco exclusivo `leads_descubra_seu_lucro`. Como alternativa, configure `LEADS_WEBHOOK_URL` e, se necessário, `LEADS_WEBHOOK_TOKEN`.
 3. Publique como um projeto Vite. A função `api/leads.js` será implantada junto com o site.
 
-O formulário envia os leads para `/api/leads` e, após o registro, redireciona para o checkout configurado.
+O formulário envia os leads para `/api/leads` e, após o registro, redireciona para o checkout configurado. Este endpoint aceita somente o produto `descubra-seu-lucro`; os registros ficam isolados dos leads das outras páginas.
 
 ## Arquivos principais
 
