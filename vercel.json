@@ -1,6 +1,22 @@
 {
   "rewrites": [
     {
+      "source": "/tf01",
+      "destination": "https://descubra-seu-lucro-tf01.vercel.app"
+    },
+    {
+      "source": "/tf01/(.*)",
+      "destination": "https://descubra-seu-lucro-tf01.vercel.app/$1"
+    },
+    {
+      "source": "/tf02",
+      "destination": "https://kit-preco-certo-tf01.vercel.app"
+    },
+    {
+      "source": "/tf02/(.*)",
+      "destination": "https://kit-preco-certo-tf01.vercel.app/$1"
+    },
+    {
       "source": "/((?!api/|assets/|videos/).*)",
       "destination": "/index.html"
     }
