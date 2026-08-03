@@ -227,8 +227,6 @@ export function PaidTrafficProfitPage() {
 
   return (
     <div className={`sales-page sales-page--${page.theme}${page.isPreview ? ' sales-page--preview' : ''}`}>
-      <a className="skip-link" href="#conteudo">Ir para o conteúdo</a>
-
       <header className="sales-hero">
         <p className="sales-mobile-banner">Exclusivo para empresários</p>
         <div className="sales-container">
