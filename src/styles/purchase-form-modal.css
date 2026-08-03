@@ -1,0 +1,196 @@
+.purchase-modal {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  overflow-y: auto;
+  padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom));
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(0.45rem);
+  place-items: center;
+}
+
+.purchase-modal__dialog {
+  position: relative;
+  width: min(100%, 32rem);
+  padding: clamp(1.4rem, 5vw, 2.2rem);
+  border: 1px solid var(--sales-line);
+  border-radius: 1.1rem;
+  color: #f8faf7;
+  background:
+    radial-gradient(circle at 100% 0, var(--sales-line), transparent 14rem),
+    var(--sales-surface);
+  box-shadow: 0 2rem 6rem rgba(0, 0, 0, 0.65);
+}
+
+.purchase-modal__close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: grid;
+  width: 2.5rem;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+  font: inherit;
+  font-size: 1.5rem;
+  cursor: pointer;
+  place-items: center;
+}
+
+.purchase-modal__close:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.purchase-modal__heading {
+  padding-right: 2.5rem;
+}
+
+.purchase-modal__heading > span {
+  color: var(--sales-accent);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.purchase-modal__heading h2 {
+  margin: 0.55rem 0 0.6rem;
+  font-size: clamp(1.55rem, 5vw, 2.05rem);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+}
+
+.purchase-modal__heading p {
+  margin: 0;
+  color: #b7c0ba;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.purchase-form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.purchase-form__field {
+  display: grid;
+  gap: 0.42rem;
+}
+
+.purchase-form__field label {
+  color: #f8faf7;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.purchase-form__field input {
+  width: 100%;
+  min-height: 3.15rem;
+  padding: 0.72rem 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.62rem;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.28);
+  font: inherit;
+  font-size: 1rem;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.purchase-form__field input::placeholder {
+  color: #77817a;
+}
+
+.purchase-form__field input:focus {
+  border-color: var(--sales-accent);
+  box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--sales-accent) 18%, transparent);
+  outline: 0;
+}
+
+.purchase-form__field input[aria-invalid="true"] {
+  border-color: #ff8068;
+}
+
+.purchase-form__field input:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.purchase-form__error {
+  color: #ff9b87;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.purchase-form__status {
+  margin: 0;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid rgba(255, 128, 104, 0.38);
+  border-radius: 0.58rem;
+  color: #ffd2c9;
+  background: rgba(142, 36, 20, 0.17);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.purchase-form__submit {
+  display: flex;
+  min-height: 3.4rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.8rem 1rem;
+  border: 0;
+  border-radius: 0.65rem;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.purchase-form__submit {
+  color: #fff;
+  background: linear-gradient(180deg, var(--sales-accent), var(--sales-accent-2));
+  box-shadow: 0 0.8rem 2rem rgba(67, 147, 11, 0.2);
+}
+
+.purchase-form__submit:disabled {
+  cursor: wait;
+  filter: saturate(0.6);
+  opacity: 0.75;
+}
+
+.purchase-form__privacy {
+  margin: -0.15rem 0 0;
+  color: #89948d;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
+@media (max-width: 30rem) {
+  .purchase-modal {
+    align-items: end;
+    padding-inline: 0;
+    padding-bottom: 0;
+  }
+
+  .purchase-modal__dialog {
+    width: 100%;
+    max-height: calc(100svh - env(safe-area-inset-top));
+    overflow-y: auto;
+    padding: 1.35rem 1rem max(1.1rem, env(safe-area-inset-bottom));
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    border-radius: 1rem 1rem 0 0;
+  }
+
+  .purchase-modal__heading h2 {
+    font-size: 1.55rem;
+  }
+}
