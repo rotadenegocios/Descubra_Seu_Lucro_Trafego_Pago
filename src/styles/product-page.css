@@ -2045,3 +2045,31 @@
     min-height: 12.5rem;
   }
 }
+
+/* Variantes de tráfego da página 01: mesmas peças, diferentes percursos. */
+.sales-page--layout-reordered .sales-content { display: flex; flex-direction: column; }
+.sales-page--layout-reordered .sales-content > .proof-section { order: 1; }
+.sales-page--layout-reordered .sales-content > .solution-section { order: 2; }
+.sales-page--layout-reordered .sales-content > .steps-section { order: 3; }
+.sales-page--layout-reordered .sales-content > .problem-section { order: 4; }
+.sales-page--layout-reordered .sales-content > .transform-section { order: 5; }
+.sales-page--layout-reordered .sales-content > .receives-section { order: 6; }
+.sales-page--layout-reordered .sales-content > .authority-section { order: 7; }
+.sales-page--layout-reordered .sales-content > .audience-section { order: 8; }
+.sales-page--layout-reordered .sales-content > .mentor-section { order: 9; }
+.sales-page--layout-reordered .sales-content > .offer-section { order: 10; }
+.sales-page--layout-reordered .sales-content > .faq-section { order: 11; }
+
+.sales-page--layout-video-only .sales-hero { padding-bottom: clamp(2rem, 5vw, 4rem); }
+.sales-page--layout-video-only .sales-mobile-banner,
+.sales-page--layout-video-only .sales-eyebrow,
+.sales-page--layout-video-only .sales-hero h1,
+.sales-page--layout-video-only .sales-hero__lead,
+.sales-page--layout-video-only .hero-promises,
+.sales-page--layout-video-only .sales-scarcity,
+.sales-page--layout-video-only .sales-mobile-prompt,
+.sales-page--layout-video-only .trust-row { display: none; }
+.sales-page--layout-video-only .sales-hero .sales-container { display: flex; flex-direction: column; align-items: center; }
+.sales-page--layout-video-only .sales-logo { margin-bottom: 1.5rem; }
+.sales-page--layout-video-only .video-frame { width: min(100%, 62rem); margin-top: 0; }
+.sales-page--layout-video-only .sales-cta--hero { margin-top: 1.25rem; }

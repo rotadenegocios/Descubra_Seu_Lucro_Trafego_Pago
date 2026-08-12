@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { PurchaseFormModal } from './PurchaseFormModal.jsx'
-import { businessInfo, profitPage } from './profitPage.jsx'
+import { businessInfo, getProfitPageVariant } from './profitPage.jsx'
 import './styles/product-page.css'
 
 function CTA({ page, source, onPurchase, className = '' }) {
@@ -207,7 +207,7 @@ function TestimonialVideos({ videos }) {
 }
 
 export function PaidTrafficProfitPage() {
-  const page = profitPage
+  const page = getProfitPageVariant()
   const usesPurchaseForm = page.purchaseFlow === 'form'
   const [isPurchaseFormOpen, setIsPurchaseFormOpen] = useState(false)
   const [ctaSource, setCtaSource] = useState('')
@@ -226,7 +226,7 @@ export function PaidTrafficProfitPage() {
   }
 
   return (
-    <div className={`sales-page sales-page--${page.theme}${page.isPreview ? ' sales-page--preview' : ''}`}>
+    <div className={`sales-page sales-page--${page.theme} sales-page--variant-${page.variant || 'default'}${page.layout ? ` sales-page--layout-${page.layout}` : ''}${page.isPreview ? ' sales-page--preview' : ''}`}>
       <header className="sales-hero">
         <p className="sales-mobile-banner">Exclusivo para empresários</p>
         <div className="sales-container">
@@ -247,7 +247,7 @@ export function PaidTrafficProfitPage() {
         </div>
       </header>
 
-      <main id="conteudo">
+      <main id="conteudo" className="sales-content">
         <section className="problem-section sales-section">
           <div className="sales-container">
             <div className="section-heading"><span>Diagnóstico</span><h2>{page.problemsTitle}</h2></div>

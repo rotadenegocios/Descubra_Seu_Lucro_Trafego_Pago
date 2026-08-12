@@ -145,3 +145,61 @@ export const profitPage = {
     ['Qual a diferença para um curso comum?', 'Aqui você recebe o método, a ferramenta pronta e acompanhamento para implementar.'],
   ],
 }
+
+export const profitPageVariants = {
+  problema: {
+    variant: 'problema',
+    eyebrow: 'Se o dinheiro entra, mas nunca sobra',
+    headline: <>Seu negócio fatura, mas você não sabe <em>quanto realmente lucra.</em></>,
+    subheadline: 'Pare de confundir saldo em conta com lucro e descubra o resultado real da sua empresa.',
+    cta: 'Quero enxergar meu lucro',
+    problemsTitle: 'O que está escondendo o seu lucro',
+  },
+  resultado: {
+    variant: 'resultado',
+    eyebrow: 'Uma visão clara para decidir melhor',
+    headline: <>Descubra o lucro real da sua empresa e saiba <em>quanto pode retirar.</em></>,
+    subheadline: 'Organize vendas e gastos em poucos minutos e tome decisões com números confiáveis.',
+    cta: 'Quero descobrir meu lucro real',
+    solutionTitle: 'Do lançamento diário à decisão segura',
+  },
+  ferramenta: {
+    variant: 'ferramenta',
+    eyebrow: 'Método + ferramenta financeira',
+    headline: <>Uma ferramenta simples para mostrar <em>o lucro real do seu negócio.</em></>,
+    subheadline: 'Você informa vendas e gastos. A ferramenta organiza tudo e mostra lucro, margem e pró-labore.',
+    cta: 'Quero acessar a ferramenta',
+    videoLabel: 'Veja o dashboard funcionando',
+    stepsTitle: 'Como você transforma números em decisões',
+  },
+  reorganizada: {
+    variant: 'reorganizada',
+    layout: 'reordered',
+    eyebrow: 'Veja o método antes de tomar uma decisão',
+    headline: <>Tenha uma visão completa do negócio antes de decidir <em>quanto retirar.</em></>,
+    subheadline: 'Entenda o problema, veja a ferramenta funcionando e conheça a oferta no momento certo.',
+    cta: 'Quero organizar meus números',
+    receivesTitle: 'Uma visão completa para entender seu negócio',
+  },
+  video: {
+    variant: 'video',
+    layout: 'video-only',
+    heroMode: 'video-only',
+    videoLabel: 'Assista antes de decidir',
+    videoTitle: 'Como descobrir o lucro real da sua empresa',
+    cta: 'Quero acessar o método',
+  },
+}
+
+export function getProfitPageVariant() {
+  const params = new URLSearchParams(window.location.search)
+  const contentMap = {
+    criativo_dor: 'problema',
+    criativo_resultado: 'resultado',
+    criativo_dashboard: 'ferramenta',
+    criativo_comparacao: 'reorganizada',
+    criativo_video: 'video',
+  }
+  const key = params.get('variante') || contentMap[params.get('utm_content')] || 'resultado'
+  return { ...profitPage, ...(profitPageVariants[key] || profitPageVariants.resultado) }
+}
