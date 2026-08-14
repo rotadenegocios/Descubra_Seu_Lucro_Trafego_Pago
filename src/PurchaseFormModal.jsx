@@ -205,7 +205,10 @@ export function PurchaseFormModal({
     setIsSubmitting(true)
 
     try {
-      const response = await fetch('/api/leads', {
+      const leadsEndpoint = window.location.pathname.startsWith('/dsl-tf01')
+        ? '/dsl-tf01/api/leads'
+        : '/api/leads'
+      const response = await fetch(leadsEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
