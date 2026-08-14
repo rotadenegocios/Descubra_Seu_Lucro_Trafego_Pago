@@ -192,12 +192,22 @@ export const profitPageVariants = {
 export function getProfitPageVariant() {
   const params = new URLSearchParams(window.location.search)
   const explicitVariant = params.get('variante')
+  const pathVariant = window.location.pathname
+    .split('/')
+    .filter(Boolean)
+    .pop()
   const contentMap = {
     criativo_dor: 'problema',
     criativo_resultado: 'resultado',
     criativo_dashboard: 'ferramenta',
     criativo_remarketing: 'remarketing',
   }
-  const key = explicitVariant || contentMap[params.get('utm_content')] || 'resultado'
+  const pathMap = {
+    problema: 'problema',
+    resultado: 'resultado',
+    ferramenta: 'ferramenta',
+    remarketing: 'remarketing',
+  }
+  const key = explicitVariant || pathMap[pathVariant] || contentMap[params.get('utm_content')] || 'resultado'
   return { ...profitPage, ...(profitPageVariants[key] || profitPageVariants.resultado) }
 }

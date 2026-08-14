@@ -27,6 +27,13 @@ Exemplos:
 
 Também é possível abrir diretamente com `?variante=problema`, `?variante=resultado`, `?variante=ferramenta` ou `?variante=remarketing`.
 
+Links por caminho no BIO:
+
+- `https://bio.gesieudo.com/dsl-tf01/problema`
+- `https://bio.gesieudo.com/dsl-tf01/resultado`
+- `https://bio.gesieudo.com/dsl-tf01/ferramenta`
+- `https://bio.gesieudo.com/dsl-tf01/remarketing`
+
 ## Atualização incorporada da cópia `02`
 
 A versão oficial `01` agora incorpora a atualização encontrada na cópia `02`:
