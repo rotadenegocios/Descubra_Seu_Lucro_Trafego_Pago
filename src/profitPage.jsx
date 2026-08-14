@@ -41,7 +41,8 @@ export const profitPage = {
   mentorSectionImage: mentorImage,
   videoTitle: 'Descubra Seu Lucro',
   videoLabel: 'Método com Gesieudo Nicácio',
-  videoSrc: '/videos/descubra-seu-lucro.mp4',
+  // O arquivo local era apenas um ponteiro Git LFS; esta é a mídia MP4 publicada.
+  videoSrc: 'https://www.bio.gesieudo.com/videos/descubra-seu-lucro.mp4',
   trust: ['Método + ferramenta', 'Suporte por 7 dias', 'Pagamento único'],
   stats: [
     ['60%', 'das empresas fecham em até 5 anos por falta de gestão'],
@@ -146,6 +147,7 @@ export const profitPage = {
   ],
 }
 
+// Uma única página, com mensagens diferentes para cada origem de tráfego.
 export const profitPageVariants = {
   problema: {
     variant: 'problema',
@@ -172,34 +174,30 @@ export const profitPageVariants = {
     videoLabel: 'Veja o dashboard funcionando',
     stepsTitle: 'Como você transforma números em decisões',
   },
-  reorganizada: {
-    variant: 'reorganizada',
-    layout: 'reordered',
-    eyebrow: 'Veja o método antes de tomar uma decisão',
-    headline: <>Tenha uma visão completa do negócio antes de decidir <em>quanto retirar.</em></>,
-    subheadline: 'Entenda o problema, veja a ferramenta funcionando e conheça a oferta no momento certo.',
-    cta: 'Quero organizar meus números',
-    receivesTitle: 'Uma visão completa para entender seu negócio',
-  },
-  video: {
-    variant: 'video',
-    layout: 'video-only',
-    heroMode: 'video-only',
-    videoLabel: 'Assista antes de decidir',
-    videoTitle: 'Como descobrir o lucro real da sua empresa',
-    cta: 'Quero acessar o método',
+  remarketing: {
+    variant: 'remarketing',
+    eyebrow: 'Você já conheceu o Descubra Seu Lucro',
+    headline: <>Não feche mais um mês sem saber <em>quanto realmente sobrou.</em></>,
+    subheadline: 'Acesse o método, organize seus números e defina seu pró-labore com segurança.',
+    cta: 'Quero garantir meu acesso',
+    scarcity: 'Condição especial disponível nesta página',
+    faq: [
+      ['Preciso entender de contabilidade?', 'Não. Você informa vendas e gastos e a ferramenta faz os cálculos.'],
+      ['Quanto tempo gasto por dia?', 'Poucos minutos para lançar o que vendeu e o que pagou.'],
+      ['E se eu não gostar?', 'Você pode solicitar o reembolso integral dentro de sete dias.'],
+    ],
   },
 }
 
 export function getProfitPageVariant() {
   const params = new URLSearchParams(window.location.search)
+  const explicitVariant = params.get('variante')
   const contentMap = {
     criativo_dor: 'problema',
     criativo_resultado: 'resultado',
     criativo_dashboard: 'ferramenta',
-    criativo_comparacao: 'reorganizada',
-    criativo_video: 'video',
+    criativo_remarketing: 'remarketing',
   }
-  const key = params.get('variante') || contentMap[params.get('utm_content')] || 'resultado'
+  const key = explicitVariant || contentMap[params.get('utm_content')] || 'resultado'
   return { ...profitPage, ...(profitPageVariants[key] || profitPageVariants.resultado) }
 }
