@@ -225,6 +225,29 @@ export function PaidTrafficProfitPage() {
     setIsPurchaseFormOpen(true)
   }
 
+  if (page.layout === 'video-only') {
+    return (
+      <div className={`sales-page sales-page--${page.theme} sales-page--variant-${page.variant} sales-page--layout-video-only`}>
+        <main className="sales-hero sales-hero--video-only">
+          <div className="sales-container">
+            <VideoFrame page={page} />
+            <CTA page={page} source="hero" onPurchase={openPurchaseForm} className="sales-cta--hero" />
+          </div>
+        </main>
+
+        {usesPurchaseForm && (
+          <PurchaseFormModal
+            isOpen={isPurchaseFormOpen}
+            onClose={() => setIsPurchaseFormOpen(false)}
+            page={page}
+            ctaSource={ctaSource}
+            returnFocusRef={purchaseTriggerRef}
+          />
+        )}
+      </div>
+    )
+  }
+
   return (
     <div className={`sales-page sales-page--${page.theme} sales-page--variant-${page.variant || 'default'}${page.layout ? ` sales-page--layout-${page.layout}` : ''}${page.isPreview ? ' sales-page--preview' : ''}`}>
       <header className="sales-hero">

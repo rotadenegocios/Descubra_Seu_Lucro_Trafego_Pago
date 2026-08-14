@@ -187,6 +187,13 @@ export const profitPageVariants = {
       ['E se eu não gostar?', 'Você pode solicitar o reembolso integral dentro de sete dias.'],
     ],
   },
+  video: {
+    variant: 'video',
+    layout: 'video-only',
+    videoLabel: 'Assista antes de decidir',
+    videoTitle: 'Como descobrir o lucro real da sua empresa',
+    cta: 'Quero acessar o método',
+  },
 }
 
 export function getProfitPageVariant() {
@@ -201,12 +208,14 @@ export function getProfitPageVariant() {
     criativo_resultado: 'resultado',
     criativo_dashboard: 'ferramenta',
     criativo_remarketing: 'remarketing',
+    criativo_video: 'video',
   }
   const pathMap = {
     problema: 'problema',
     resultado: 'resultado',
     ferramenta: 'ferramenta',
     remarketing: 'remarketing',
+    video: 'video',
   }
   const key = explicitVariant || pathMap[pathVariant] || contentMap[params.get('utm_content')] || 'resultado'
   return { ...profitPage, ...(profitPageVariants[key] || profitPageVariants.resultado) }

@@ -17,6 +17,7 @@ Todas as versões abaixo são servidas pela mesma página e são selecionadas po
 | `resultado` | `criativo_resultado` | Resultado: lucro real e pró-labore |
 | `ferramenta` | `criativo_dashboard` | Demonstração da ferramenta financeira |
 | `remarketing` | `criativo_remarketing` | Retorno para quem já conheceu o produto |
+| `video` | `criativo_video` | Página mínima: vídeo e CTA |
 
 Exemplos:
 
@@ -24,15 +25,17 @@ Exemplos:
 - `https://descubra-seu-lucro-tf01.vercel.app/?utm_content=criativo_resultado`
 - `https://descubra-seu-lucro-tf01.vercel.app/?utm_content=criativo_dashboard`
 - `https://descubra-seu-lucro-tf01.vercel.app/?utm_content=criativo_remarketing`
+- `https://descubra-seu-lucro-tf01.vercel.app/?utm_content=criativo_video`
 
-Também é possível abrir diretamente com `?variante=problema`, `?variante=resultado`, `?variante=ferramenta` ou `?variante=remarketing`.
+Também é possível abrir diretamente com `?variante=problema`, `?variante=resultado`, `?variante=ferramenta`, `?variante=remarketing` ou `?variante=video`.
 
 Links por caminho no BIO:
 
-- `https://bio.gesieudo.com/dsl-tf01/problema`
-- `https://bio.gesieudo.com/dsl-tf01/resultado`
-- `https://bio.gesieudo.com/dsl-tf01/ferramenta`
-- `https://bio.gesieudo.com/dsl-tf01/remarketing`
+- `https://www.bio.gesieudo.com/dsl-tf01/problema`
+- `https://www.bio.gesieudo.com/dsl-tf01/resultado`
+- `https://www.bio.gesieudo.com/dsl-tf01/ferramenta`
+- `https://www.bio.gesieudo.com/dsl-tf01/remarketing`
+- `https://www.bio.gesieudo.com/dsl-tf01/video`
 
 ## Atualização incorporada da cópia `02`
 
