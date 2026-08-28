@@ -42,7 +42,7 @@ export const profitPage = {
   videoTitle: 'Descubra Seu Lucro',
   videoLabel: 'Método com Gesieudo Nicácio',
   // O arquivo local era apenas um ponteiro Git LFS; esta é a mídia MP4 publicada.
-  videoSrc: 'https://www.bio.gesieudo.com/videos/descubra-seu-lucro.mp4',
+  videoSrc: 'https://video.smartplayer.ai?k=PT1nYktPbEVzYXRYNUhGU29Qai81dW15eEN5TnZUNzhoM3dTV1A3YkdLVWsxQmZlV2JBS3ptWlhOTS9SU2RDTXhpR2tkdWwvekUrYlUvMVhrVkdkc0YyVQ==',
   trust: ['Método + ferramenta', 'Suporte por 7 dias', 'Pagamento único'],
   stats: [
     ['60%', 'das empresas fecham em até 5 anos por falta de gestão'],
