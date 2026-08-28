@@ -142,20 +142,40 @@ function VideoFrame({ page }) {
   const isSmartPlayer = videoSrc.includes('video.smartplayer.ai')
 
   if (isSmartPlayer) {
+    const smartPlayerSrc = `${videoSrc}${videoSrc.includes('?') ? '&' : '?'}aspectRatio=16:9&responsive=1`
+
     return (
-      <div className="video-frame video-frame--player" aria-label={`Vídeo: ${page.videoTitle || 'Descubra Seu Lucro'}`}>
+      <div
+        className="video-frame video-frame--player"
+        aria-label={`Vídeo: ${page.videoTitle || 'Descubra Seu Lucro'}`}
+        style={{
+          width: '100%',
+          maxWidth: '960px',
+          margin: '0 auto',
+          aspectRatio: '16 / 9',
+          overflow: 'hidden',
+          minHeight: 0,
+          height: 'auto',
+        }}
+      >
         <iframe
-          src={videoSrc}
+          src={smartPlayerSrc}
           title={page.videoTitle || 'Descubra Seu Lucro'}
           loading="eager"
+          scrolling="no"
           referrerPolicy="strict-origin-when-cross-origin"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowFullScreen
           style={{
             display: 'block',
             width: '100%',
+            height: '100%',
+            minHeight: 0,
             aspectRatio: '16 / 9',
             border: 0,
+            margin: 0,
+            padding: 0,
+            overflow: 'hidden',
           }}
         />
       </div>
