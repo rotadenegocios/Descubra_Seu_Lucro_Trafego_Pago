@@ -3,6 +3,8 @@ import { PurchaseFormModal } from './PurchaseFormModal.jsx'
 import { businessInfo, getProfitPageVariant } from './profitPage.jsx'
 import './styles/product-page.css'
 
+const SMARTPLAYER_VIDEO_URL = 'https://video.smartplayer.ai?k=PT1nYktPbEVzYXRYNUhGU29Qai81dW15eEN5TnZUNzhoM3dTV1A3YkdLVWsxQmZlV2JBS3ptWlhOTS9SU2RDTXhpR2tkdWwvekUrYlUvMVhrVkdkc0YyVQ=='
+
 function CTA({ page, source, onPurchase, className = '' }) {
   const content = (
     <>
@@ -136,6 +138,30 @@ function MiniDashboard({ type }) {
 }
 
 function VideoFrame({ page }) {
+  const videoSrc = page.videoSrc || SMARTPLAYER_VIDEO_URL
+  const isSmartPlayer = videoSrc.includes('video.smartplayer.ai')
+
+  if (isSmartPlayer) {
+    return (
+      <div className="video-frame video-frame--player" aria-label={`Vídeo: ${page.videoTitle || 'Descubra Seu Lucro'}`}>
+        <iframe
+          src={videoSrc}
+          title={page.videoTitle || 'Descubra Seu Lucro'}
+          loading="eager"
+          referrerPolicy="strict-origin-when-cross-origin"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+          style={{
+            display: 'block',
+            width: '100%',
+            aspectRatio: '16 / 9',
+            border: 0,
+          }}
+        />
+      </div>
+    )
+  }
+
   if (page.videoSrc) {
     return (
       <div className="video-frame video-frame--player" aria-label={`Vídeo: ${page.videoTitle}`}>
@@ -193,7 +219,7 @@ function TestimonialVideos({ videos }) {
       {videos.map((video) => (
         <div className="testimonial-video" key={video.id}>
           <iframe
-            src={`https://video.smartplayer.ai?k=PT1nYktPbEVzYXRYNUhGU29Qai81dW15eEN5TnZUNzhoM3dTV1A3YkdLVWsxQmZlV2JBS3ptWlhOTS9SU2RDTXhpR2tkdWwvekUrYlUvMVhrVkdkc0YyVQ==`}
+            src={`https://www.youtube-nocookie.com/embed/${video.id}?rel=0`}
             title={video.title}
             loading="lazy"
             referrerPolicy="strict-origin-when-cross-origin"
