@@ -3,8 +3,6 @@ import { PurchaseFormModal } from './PurchaseFormModal.jsx'
 import { businessInfo, getProfitPageVariant } from './profitPage.jsx'
 import './styles/product-page.css'
 
-const SMARTPLAYER_VIDEO_URL = 'https://video.smartplayer.ai?k=PT1nYktPbEVzYXRYNUhGU29Qai81dW15eEN5TnZUNzhoM3dTV1A3YkdLVWsxQmZlV2JBS3ptWlhOTS9SU2RDTXhpR2tkdWwvekUrYlUvMVhrVkdkc0YyVQ=='
-
 function CTA({ page, source, onPurchase, className = '' }) {
   const content = (
     <>
@@ -137,97 +135,21 @@ function MiniDashboard({ type }) {
   )
 }
 
-function VideoFrame({ page }) {
-  const videoSrc = page.videoSrc || SMARTPLAYER_VIDEO_URL
-  const isSmartPlayer = videoSrc.includes('video.smartplayer.ai')
-
-  if (isSmartPlayer) {
-    const smartPlayerSrc = `${videoSrc}${videoSrc.includes('?') ? '&' : '?'}aspectRatio=16:9&responsive=1`
-
-    return (
-      <div
-        className="video-frame video-frame--player"
-        aria-label={`Vídeo: ${page.videoTitle || 'Descubra Seu Lucro'}`}
-        style={{
-          width: '100%',
-          maxWidth: '960px',
-          margin: '0 auto',
-          aspectRatio: '16 / 9',
-          overflow: 'hidden',
-          minHeight: 0,
-          height: 'auto',
-        }}
-      >
-        <iframe
-          src={smartPlayerSrc}
-          title={page.videoTitle || 'Descubra Seu Lucro'}
-          loading="eager"
-          scrolling="no"
-          referrerPolicy="strict-origin-when-cross-origin"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
-          style={{
-            display: 'block',
-            width: '100%',
-            height: '100%',
-            minHeight: 0,
-            aspectRatio: '16 / 9',
-            border: 0,
-            margin: 0,
-            padding: 0,
-            overflow: 'hidden',
-          }}
-        />
-      </div>
-    )
-  }
-
-  if (page.videoSrc) {
-    return (
-      <div className="video-frame video-frame--player" aria-label={`Vídeo: ${page.videoTitle}`}>
-        <video controls preload="metadata" playsInline>
-          <source src={page.videoSrc} type="video/mp4" />
-          Seu navegador não consegue reproduzir este vídeo.
-        </video>
-      </div>
-    )
-  }
-
-  if (page.productImage) {
-    const srcSet = page.productImageSources
-      ?.map(([src, width]) => `${src} ${width}w`)
-      .join(', ')
-
-    return (
-      <div className="video-frame video-frame--image">
-        <img
-          src={page.productImage}
-          srcSet={srcSet}
-          sizes="(max-width: 37.5rem) calc(100vw - 1.5rem), (max-width: 62rem) calc(100vw - 2rem), 60rem"
-          width={page.productImageWidth}
-          height={page.productImageHeight}
-          alt="Planilhas do Kit Preço Certo em diferentes dispositivos"
-          decoding="async"
-          fetchPriority="high"
-        />
-      </div>
-    )
-  }
-
+function VideoFrame() {
   return (
-    <div className="video-frame" aria-label={`Vídeo: ${page.videoTitle}`}>
-      <div className="video-frame__copy">
-        <span>{page.videoLabel}</span>
-        <strong>{page.videoTitle}</strong>
-      </div>
-      <img className="video-frame__mentor" src={page.mentorImage} alt="Gesieudo Nicácio" />
-      <button type="button" className="video-frame__play" aria-label="Vídeo em breve" title="Vídeo em breve">
-        <span aria-hidden="true">▶</span>
-      </button>
-      <div className="video-frame__controls" aria-hidden="true">
-        <span>▶</span><i /><small>00:00</small><span>⚙</span><span>⛶</span>
-      </div>
-    </div>
+    <div
+      id="wordpress-video-player"
+      className="video-frame video-frame--wordpress"
+      aria-label="Espaço para vídeo"
+      style={{
+        width: '100%',
+        aspectRatio: '16 / 9',
+        overflow: 'hidden',
+        margin: '0 auto',
+        padding: 0,
+        background: '#000',
+      }}
+    />
   )
 }
 
@@ -276,7 +198,7 @@ export function PaidTrafficProfitPage() {
       <div className={`sales-page sales-page--${page.theme} sales-page--variant-${page.variant} sales-page--layout-video-only`}>
         <main className="sales-hero sales-hero--video-only">
           <div className="sales-container">
-            <VideoFrame page={page} />
+            <VideoFrame />
             <CTA page={page} source="hero" onPurchase={openPurchaseForm} className="sales-cta--hero" />
           </div>
         </main>
@@ -308,7 +230,7 @@ export function PaidTrafficProfitPage() {
           {page.heroPromises && <ul className="hero-promises">{page.heroPromises.map((item) => <li key={item}><StatusMark />{item}</li>)}</ul>}
           {page.scarcity && <p className="sales-scarcity">🔥 {page.scarcity}</p>}
           <p className="sales-mobile-prompt">Assista o vídeo até o final</p>
-          <VideoFrame page={page} />
+          <VideoFrame />
           <CTA page={page} source="hero" onPurchase={openPurchaseForm} className="sales-cta--hero" />
           <ul className="trust-row" aria-label="Benefícios da compra">
             {page.trust.map((item, index) => <li key={item}><span>{['⚡', '♢', '▣'][index]}</span>{item}</li>)}
