@@ -193,7 +193,7 @@ function TestimonialVideos({ videos }) {
       {videos.map((video) => (
         <div className="testimonial-video" key={video.id}>
           <iframe
-            src={`https://www.youtube-nocookie.com/embed/${video.id}?rel=0`}
+            src={`https://video.smartplayer.ai?k=PT1nYktPbEVzYXRYNUhGU29Qai81dW15eEN5TnZUNzhoM3dTV1A3YkdLVWsxQmZlV2JBS3ptWlhOTS9SU2RDTXhpR2tkdWwvekUrYlUvMVhrVkdkc0YyVQ==`}
             title={video.title}
             loading="lazy"
             referrerPolicy="strict-origin-when-cross-origin"
