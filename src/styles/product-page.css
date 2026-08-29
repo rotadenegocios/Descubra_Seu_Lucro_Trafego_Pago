@@ -768,7 +768,7 @@
 
 .offer-card {
   display: grid;
-  grid-template-columns: 1.25fr 0.65fr 0.9fr;
+  grid-template-columns: 1.05fr 1.1fr 0.9fr;
   align-items: center;
   gap: 2rem;
   padding: clamp(1.5rem, 4vw, 2.5rem);
@@ -815,9 +815,10 @@
 
 .offer-card__price strong {
   color: #fff;
-  font-size: clamp(3rem, 7vw, 5.2rem);
-  line-height: 1;
-  letter-spacing: -0.07em;
+  font-size: clamp(2.1rem, 4vw, 3.6rem);
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+  white-space: nowrap;
 }
 
 .sales-page--lucro .offer-card__price strong {
@@ -826,7 +827,9 @@
 }
 
 .offer-card__price small {
+  margin-top: 0.45rem;
   color: #b8c1bb;
+  font-size: 1rem;
 }
 
 .guarantee {
@@ -1963,7 +1966,7 @@
   }
 
   .sales-page--preview .offer-card__price strong {
-    font-size: clamp(4.25rem, 20vw, 5.25rem);
+    font-size: clamp(2.15rem, 9vw, 3.2rem);
   }
 
   .sales-page--preview .offer-card > .sales-cta {

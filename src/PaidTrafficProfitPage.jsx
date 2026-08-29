@@ -362,7 +362,12 @@ export function PaidTrafficProfitPage() {
           <div className="sales-container">
             <div className="offer-card">
               <div className="offer-card__intro"><small>Oferta especial</small><h2>{page.title}</h2><ul>{page.offerItems.map((item) => <li key={item}><StatusMark />{item}</li>)}</ul></div>
-              <div className="offer-card__price">{page.totalValue && <del>Valor total {page.totalValue}</del>}<span>Por apenas</span><strong>{page.price}</strong><small>{page.installment || page.priceNote}</small>{page.installment && <small>{page.priceNote}</small>}</div>
+              <div className="offer-card__price">
+                {page.totalValue && <del>Valor total {page.totalValue}</del>}
+                <span>Por apenas</span>
+                <strong>{page.installment || page.price}</strong>
+                <small>{page.installment ? `${page.priceNote} ${page.price}` : page.priceNote}</small>
+              </div>
               <CTA page={page} source="offer" onPurchase={openPurchaseForm} />
             </div>
             <div className="guarantee"><span>7</span><div><h2>Garantia de 7 dias</h2><p>Teste o produto por sete dias. Se não fizer sentido para o seu negócio, solicite o reembolso dentro desse período.</p></div></div>
