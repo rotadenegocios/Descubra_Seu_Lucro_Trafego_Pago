@@ -3,6 +3,8 @@ import { PurchaseFormModal } from './PurchaseFormModal.jsx'
 import { businessInfo, getProfitPageVariant } from './profitPage.jsx'
 import './styles/product-page.css'
 
+const SMARTPLAYER_EMBED_URL = 'https://player.scaleup.com.br/embed/7b99dac06c456098fee41fc3f2d40f6362860cf2?aspectRatio=16:9&responsive=1&controls=1&fullscreen=1'
+
 function CTA({ page, source, onPurchase, className = '' }) {
   const content = (
     <>
@@ -135,21 +137,42 @@ function MiniDashboard({ type }) {
   )
 }
 
-function VideoFrame() {
+function VideoFrame({ page }) {
   return (
     <div
-      id="wordpress-video-player"
-      className="video-frame video-frame--wordpress"
-      aria-label="Espaço para vídeo"
+      className="video-frame video-frame--player"
+      aria-label={`Vídeo: ${page.videoTitle || 'Descubra Seu Lucro'}`}
       style={{
+        position: 'relative',
         width: '100%',
         aspectRatio: '16 / 9',
         overflow: 'hidden',
-        margin: '0 auto',
-        padding: 0,
+        margin: '0',
+        padding: '0',
         background: '#000',
       }}
-    />
+    >
+      <iframe
+        src={SMARTPLAYER_EMBED_URL}
+        title={page.videoTitle || 'Descubra Seu Lucro'}
+        loading="eager"
+        scrolling="no"
+        referrerPolicy="strict-origin-when-cross-origin"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowFullScreen
+        style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'block',
+          width: '100%',
+          height: '100%',
+          border: 0,
+          margin: 0,
+          padding: 0,
+          overflow: 'hidden',
+        }}
+      />
+    </div>
   )
 }
 
@@ -198,7 +221,7 @@ export function PaidTrafficProfitPage() {
       <div className={`sales-page sales-page--${page.theme} sales-page--variant-${page.variant} sales-page--layout-video-only`}>
         <main className="sales-hero sales-hero--video-only">
           <div className="sales-container">
-            <VideoFrame />
+            <VideoFrame page={page} />
             <CTA page={page} source="hero" onPurchase={openPurchaseForm} className="sales-cta--hero" />
           </div>
         </main>
@@ -230,7 +253,7 @@ export function PaidTrafficProfitPage() {
           {page.heroPromises && <ul className="hero-promises">{page.heroPromises.map((item) => <li key={item}><StatusMark />{item}</li>)}</ul>}
           {page.scarcity && <p className="sales-scarcity">🔥 {page.scarcity}</p>}
           <p className="sales-mobile-prompt">Assista o vídeo até o final</p>
-          <VideoFrame />
+          <VideoFrame page={page} />
           <CTA page={page} source="hero" onPurchase={openPurchaseForm} className="sales-cta--hero" />
           <ul className="trust-row" aria-label="Benefícios da compra">
             {page.trust.map((item, index) => <li key={item}><span>{['⚡', '♢', '▣'][index]}</span>{item}</li>)}
