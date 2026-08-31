@@ -1,8 +1,12 @@
 // GERADO POR _shared/sync-tracking.mjs - NAO EDITE AQUI
+import { debugLog } from './config.js'
 import { track } from './client.js'
 
 const PROGRESS_STEPS = [25, 50, 75]
 const PLAYER_ORIGINS = ['https://player.scaleup.com.br', 'https://video.smartplayer.ai']
+
+const START_NAMES = ['play', 'playing', 'start', 'started', 'videoplay', 'onplay']
+const END_NAMES = ['ended', 'complete', 'completed', 'finish', 'finished', 'onended']
 
 const seen = new WeakMap()
 
@@ -54,6 +58,10 @@ function watchNativeVideo() {
       const video = event.target
       if (video.tagName !== 'VIDEO') return
 
+      const reached = seen.get(video)
+      if (!reached || reached.has('ended')) return
+      reached.add('ended')
+
       track('video_complete', {
         video_id: videoLabel(video),
         video_duration_ms: Math.round((video.duration || 0) * 1000),
@@ -63,25 +71,55 @@ function watchNativeVideo() {
   )
 }
 
-// Player em iframe cross-origin: so da para ouvir o que ele decidir emitir.
+// O player em iframe nao documenta o protocolo. Em vez de procurar a palavra
+// em qualquer lugar do texto, so aceitamos o nome exato em um campo conhecido.
+function playerEventName(data) {
+  let parsed = data
+
+  if (typeof parsed === 'string') {
+    const text = parsed.trim()
+
+    try {
+      parsed = JSON.parse(text)
+    } catch {
+      // Mensagem simples: so vale se a string inteira for o nome do evento.
+      return text.toLowerCase()
+    }
+  }
+
+  if (!parsed || typeof parsed !== 'object') return ''
+
+  const field = ['event', 'type', 'name', 'action', 'message', 'state'].find(
+    (key) => typeof parsed[key] === 'string',
+  )
+
+  return field ? parsed[field].trim().toLowerCase() : ''
+}
+
 function watchEmbeddedPlayer() {
   let started = false
+  let completed = false
 
   window.addEventListener('message', (event) => {
     if (!PLAYER_ORIGINS.includes(event.origin)) return
+    if (started && completed) return
 
-    const raw = typeof event.data === 'string' ? event.data : JSON.stringify(event.data || '')
-    const lowered = raw.toLowerCase()
+    const name = playerEventName(event.data)
+    if (!name) return
 
-    if (!started && /"?(play|playing|start)"?/.test(lowered)) {
+    if (!started && START_NAMES.includes(name)) {
       started = true
       track('video_start', { video_provider: 'embed', video_id: 'principal' })
       return
     }
 
-    if (/"?(ended|complete|finish)"?/.test(lowered)) {
+    if (!completed && END_NAMES.includes(name)) {
+      completed = true
       track('video_complete', { video_id: 'principal', video_duration_ms: 0 })
+      return
     }
+
+    debugLog('mensagem do player ignorada:', name)
   })
 
   // Fallback: perda de foco da janela com o ponteiro sobre o player indica play.

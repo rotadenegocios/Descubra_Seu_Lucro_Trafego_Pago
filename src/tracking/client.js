@@ -15,6 +15,7 @@ import {
   applyConsentDefaults,
   gtag,
   loadGa4,
+  loadGtm,
   loadPixel,
   updateConsentSignals,
 } from './loaders.js'
@@ -22,6 +23,11 @@ import { isOptedOut, onOptOutChange } from './optout.js'
 import { flushEvents, installFlushHooks, sendToServer } from './transport.js'
 
 const sentEventIds = new Set()
+
+// Teto por nome de evento em cada carga de pagina. Um listener com defeito
+// nao pode inundar GA4, banco e invocacoes serverless.
+const MAX_PER_EVENT = 40
+const eventCounts = new Map()
 
 let context = null
 let started = false
@@ -49,6 +55,19 @@ export function getContext() {
 function sendToGa4(entry) {
   if (!window.dataLayer) return
   gtag('event', entry.name, entry.params)
+}
+
+// Todo evento tambem vira evento personalizado do GTM, com o event_id junto
+// para que uma tag da Meta disparada pelo container deduplique com a CAPI.
+function pushToDataLayer(entry) {
+  if (!config.gtmId) return
+
+  window.dataLayer = window.dataLayer || []
+  window.dataLayer.push({
+    event: entry.name,
+    event_id: entry.event_id,
+    ...entry.params,
+  })
 }
 
 // Log first-party: base legal de legitimo interesse, sem terceiros e sem
@@ -112,6 +131,14 @@ export function track(name, params = {}, options = {}) {
       return
     }
 
+    const count = (eventCounts.get(name) || 0) + 1
+    eventCounts.set(name, count)
+
+    if (count > MAX_PER_EVENT) {
+      if (count === MAX_PER_EVENT + 1) debugLog('teto atingido, evento silenciado:', name)
+      return
+    }
+
     const eventId = options.eventId || uuid()
     if (sentEventIds.has(eventId)) return
     sentEventIds.add(eventId)
@@ -135,7 +162,10 @@ export function track(name, params = {}, options = {}) {
     const consent = getConsent()
 
     sendToOwnLog(entry)
-    if (consent.analytics) sendToGa4(entry)
+    if (consent.analytics) {
+      sendToGa4(entry)
+      pushToDataLayer(entry)
+    }
     if (consent.ads) sendToMeta(entry)
 
     debugLog(entry.name, entry.params)
@@ -147,7 +177,10 @@ export function track(name, params = {}, options = {}) {
 function applyDecision(consent) {
   updateConsentSignals(consent)
 
-  if (consent.analytics) loadGa4()
+  if (consent.analytics) {
+    loadGa4()
+    loadGtm()
+  }
   if (consent.ads) loadPixel({ external_id: getContext().user_id })
 }
 

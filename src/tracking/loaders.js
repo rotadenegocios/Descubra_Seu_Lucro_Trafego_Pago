@@ -2,6 +2,7 @@
 import { config, debugLog } from './config.js'
 
 let gtagLoaded = false
+let gtmLoaded = false
 let pixelLoaded = false
 
 function injectScript(src) {
@@ -39,6 +40,18 @@ export function updateConsentSignals({ analytics, ads }) {
     ad_personalization: ads ? 'granted' : 'denied',
     analytics_storage: analytics ? 'granted' : 'denied',
   })
+}
+
+// Container do GTM. Carrega depois do Consent Mode, entao as tags dentro do
+// container ja nascem sabendo o estado do consentimento.
+export function loadGtm() {
+  if (gtmLoaded || !config.gtmId) return
+
+  gtmLoaded = true
+  window.dataLayer = window.dataLayer || []
+  window.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' })
+  injectScript(`https://www.googletagmanager.com/gtm.js?id=${config.gtmId}`)
+  debugLog('gtm carregado', config.gtmId)
 }
 
 export function loadGa4() {
