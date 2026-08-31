@@ -1,5 +1,6 @@
 // GERADO POR _shared/sync-tracking.mjs - NAO EDITE AQUI
 import { config } from './config.js'
+import { isOptedOut } from './optout.js'
 
 const STORAGE_KEY = 'rn_consent'
 const listeners = new Set()
@@ -16,13 +17,21 @@ function read() {
   }
 }
 
+// Medicao presumida: os canais rodam desde a primeira carga e o visitante
+// interrompe quando quiser pelo aviso de privacidade (LGPD art. 18).
 export function getConsent() {
+  if (isOptedOut()) {
+    return { version: config.consentVersion, analytics: false, ads: false, decided: true }
+  }
+
   if (state === null) state = read()
-  return state || { version: config.consentVersion, analytics: false, ads: false, decided: false }
+  if (state) return state
+
+  return { version: config.consentVersion, analytics: true, ads: true, decided: false }
 }
 
 export function hasDecision() {
-  return Boolean(getConsent().decided)
+  return Boolean(state || read())
 }
 
 export function setConsent({ analytics, ads }) {

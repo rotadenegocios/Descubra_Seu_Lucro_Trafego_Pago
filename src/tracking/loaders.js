@@ -17,15 +17,18 @@ export function gtag() {
 }
 
 // Consent Mode v2. Precisa rodar antes do gtag.js para valer no primeiro hit.
-export function applyConsentDefaults() {
+// A medicao e presumida, entao o padrao ja entra concedido; a oposicao do
+// visitante rebaixa tudo para denied em seguida.
+export function applyConsentDefaults(granted = true) {
+  const value = granted ? 'granted' : 'denied'
+
   gtag('consent', 'default', {
-    ad_storage: 'denied',
-    ad_user_data: 'denied',
-    ad_personalization: 'denied',
-    analytics_storage: 'denied',
+    ad_storage: value,
+    ad_user_data: value,
+    ad_personalization: value,
+    analytics_storage: value,
     functionality_storage: 'granted',
     security_storage: 'granted',
-    wait_for_update: 500,
   })
 }
 

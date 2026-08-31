@@ -1,6 +1,6 @@
 // GERADO POR _shared/sync-tracking.mjs - NAO EDITE AQUI
 import { config, debugLog } from './config.js'
-import { consentPayload, getConsent, hasDecision, onConsentChange } from './consent.js'
+import { consentPayload, getConsent, onConsentChange } from './consent.js'
 import { ALLOWED_EVENTS, META_EVENTS } from './events.js'
 import {
   getClickIds,
@@ -21,7 +21,6 @@ import {
 import { isOptedOut, onOptOutChange } from './optout.js'
 import { flushEvents, installFlushHooks, sendToServer } from './transport.js'
 
-const metaQueue = []
 const sentEventIds = new Set()
 
 let context = null
@@ -53,7 +52,7 @@ function sendToGa4(entry) {
 }
 
 // Log first-party: base legal de legitimo interesse, sem terceiros e sem
-// dado pessoal identificavel. Roda para quem nao decidiu e para quem recusou.
+// dado pessoal identificavel.
 function sendToOwnLog(entry) {
   const base = getContext()
 
@@ -136,13 +135,8 @@ export function track(name, params = {}, options = {}) {
     const consent = getConsent()
 
     sendToOwnLog(entry)
-
-    // Modo avancado: o gtag ja roda com consentimento negado, sem cookie.
-    if (config.consentMode === 'advanced') sendToGa4(entry)
-    else if (consent.analytics) sendToGa4(entry)
-
+    if (consent.analytics) sendToGa4(entry)
     if (consent.ads) sendToMeta(entry)
-    else if (!hasDecision() && META_EVENTS[name]) metaQueue.push(entry)
 
     debugLog(entry.name, entry.params)
   } catch (error) {
@@ -150,40 +144,26 @@ export function track(name, params = {}, options = {}) {
   }
 }
 
-function flushMetaQueue(consent) {
-  const pending = metaQueue.splice(0, metaQueue.length)
-  if (!consent.ads) return
-
-  pending.forEach((entry) => {
-    if (config.consentMode === 'basic' && consent.analytics) sendToGa4(entry)
-    sendToMeta(entry)
-  })
-}
-
 function applyDecision(consent) {
   updateConsentSignals(consent)
 
-  if (consent.analytics || config.consentMode === 'advanced') loadGa4()
+  if (consent.analytics) loadGa4()
   if (consent.ads) loadPixel({ external_id: getContext().user_id })
-
-  flushMetaQueue(consent)
 }
 
 export function startTracking() {
   if (started || !config.enabled || isOptedOut()) return
   started = true
 
-  applyConsentDefaults()
-  if (config.consentMode === 'advanced') loadGa4()
-  installFlushHooks()
-
   const consent = getConsent()
-  if (consent.decided) applyDecision(consent)
+
+  applyConsentDefaults(consent.analytics || consent.ads)
+  installFlushHooks()
+  applyDecision(consent)
 
   onConsentChange(applyDecision)
   onOptOutChange((active) => {
     if (!active) return
-    metaQueue.length = 0
     updateConsentSignals({ analytics: false, ads: false })
     flushEvents()
   })

@@ -48,24 +48,29 @@ export function PrivacyNotice({ isOpen, onClose, contactEmail = '' }) {
         </section>
 
         <section>
-          <h3>Meta e Google, só com o seu aceite</h3>
+          <h3>Meta e Google</h3>
           <p>
-            O Pixel da Meta e a API de Conversões só funcionam se você aceitar. Sem aceite, nada é
-            enviado para a Meta. O Google Analytics recebe uma medição anônima, sem cookie e sem
-            identificador, usada apenas para estimar totais.
+            Também usamos o Pixel da Meta e o Google Analytics para saber quais anúncios trazem
+            visitantes que realmente se interessam. Eles recebem as mesmas ações de navegação
+            descritas acima, mais seu endereço IP e o identificador de anúncio do seu navegador.
           </p>
           <p>
-            Se você preencher o formulário de compra e tiver aceitado, seu e-mail e telefone são
-            enviados à Meta apenas de forma criptografada, para medir o resultado do anúncio. Seu
-            nome nunca é enviado.
+            Se você preencher o formulário de compra, seu e-mail e telefone são enviados à Meta
+            apenas de forma criptografada, para medir o resultado do anúncio. Seu nome nunca é
+            enviado.
+          </p>
+          <p>
+            Essa medição começa assim que a página abre. Você pode interrompê-la a qualquer momento
+            na opção abaixo, e ela vale também para a Meta e o Google.
           </p>
         </section>
 
         <section>
           <h3>Não quero ser medido</h3>
           <p>
-            Você pode se opor a qualquer momento, inclusive à medição própria. Ao ativar a opção
-            abaixo, apagamos os identificadores deste navegador e paramos todo o registro.
+            Você pode se opor a qualquer momento, e a oposição vale para todos os canais: a medição
+            própria, a Meta e o Google. Ao ativar a opção abaixo, apagamos os identificadores deste
+            navegador e paramos todo o registro.
           </p>
           <button
             type="button"

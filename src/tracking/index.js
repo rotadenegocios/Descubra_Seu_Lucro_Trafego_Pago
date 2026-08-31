@@ -4,7 +4,7 @@ import { track } from './client.js'
 
 export { track, getContext, startTracking } from './client.js'
 export { TrackingProvider, useTracking } from './react.jsx'
-export { ConsentBanner } from './ConsentBanner.jsx'
+export { PrivacyBar } from './PrivacyBar.jsx'
 export { PrivacyNotice } from './PrivacyNotice.jsx'
 export { getConsent, setConsent, hasDecision } from './consent.js'
 export { isOptedOut, setOptOut } from './optout.js'
