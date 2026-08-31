@@ -53,7 +53,7 @@ export function loadGa4() {
 
 // Mesmo snippet base da Meta, injetado so depois do aceite.
 export function loadPixel(advancedMatching) {
-  if (pixelLoaded || !config.pixelId) return
+  if (pixelLoaded || !config.pixelIds.length) return
 
   pixelLoaded = true
 
@@ -76,8 +76,9 @@ export function loadPixel(advancedMatching) {
   })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js')
   /* eslint-enable */
 
-  window.fbq('init', config.pixelId, advancedMatching || {})
-  debugLog('pixel carregado', config.pixelId)
+  // Cada pixel inicializado recebe todo fbq('track'), sem chamada extra.
+  config.pixelIds.forEach((pixelId) => window.fbq('init', pixelId, advancedMatching || {}))
+  debugLog('pixel carregado', config.pixelIds.join(', '))
 }
 
 export function isPixelLoaded() {

@@ -18,9 +18,10 @@ import {
   loadPixel,
   updateConsentSignals,
 } from './loaders.js'
-import { sendToServer } from './transport.js'
+import { isOptedOut, onOptOutChange } from './optout.js'
+import { flushEvents, installFlushHooks, sendToServer } from './transport.js'
 
-const queue = []
+const metaQueue = []
 const sentEventIds = new Set()
 
 let context = null
@@ -51,6 +52,30 @@ function sendToGa4(entry) {
   gtag('event', entry.name, entry.params)
 }
 
+// Log first-party: base legal de legitimo interesse, sem terceiros e sem
+// dado pessoal identificavel. Roda para quem nao decidiu e para quem recusou.
+function sendToOwnLog(entry) {
+  const base = getContext()
+
+  sendToServer(
+    {
+      channel: 'log',
+      event_name: entry.name,
+      event_id: entry.event_id,
+      event_time: Math.floor(entry.ts / 1000),
+      page_path: window.location.pathname,
+      referrer: document.referrer,
+      site_id: base.site_id,
+      variante: base.variante,
+      session_id: base.session_id,
+      visitor_id: base.user_id,
+      consent: consentPayload(),
+      params: entry.params,
+    },
+    { immediate: entry.urgent },
+  )
+}
+
 function sendToMeta(entry) {
   const metaName = META_EVENTS[entry.name]
   if (!metaName) return
@@ -62,21 +87,25 @@ function sendToMeta(entry) {
 
   const { fbp, fbc } = getMetaIdentifiers(getContext().search)
 
-  sendToServer({
-    event_name: entry.name,
-    event_id: entry.event_id,
-    event_time: Math.floor(entry.ts / 1000),
-    event_source_url: window.location.href,
-    site_id: config.siteId,
-    user_id: getContext().user_id,
-    consent: consentPayload(),
-    params: entry.params,
-    user_data: { fbp, fbc, ...(entry.userData || {}) },
-  })
+  sendToServer(
+    {
+      channel: 'meta',
+      event_name: entry.name,
+      event_id: entry.event_id,
+      event_time: Math.floor(entry.ts / 1000),
+      event_source_url: window.location.href,
+      site_id: config.siteId,
+      user_id: getContext().user_id,
+      consent: consentPayload(),
+      params: entry.params,
+      user_data: { fbp, fbc, ...(entry.userData || {}) },
+    },
+    { immediate: true },
+  )
 }
 
 export function track(name, params = {}, options = {}) {
-  if (!config.enabled) return
+  if (!config.enabled || isOptedOut()) return
 
   try {
     if (!ALLOWED_EVENTS.includes(name)) {
@@ -93,6 +122,7 @@ export function track(name, params = {}, options = {}) {
       name,
       event_id: eventId,
       ts: Date.now(),
+      urgent: Boolean(options.urgent) || Boolean(META_EVENTS[name]),
       params: {
         ...params,
         site_id: base.site_id,
@@ -105,12 +135,14 @@ export function track(name, params = {}, options = {}) {
 
     const consent = getConsent()
 
-    // Modo avancado: o GA4 ja roda com consentimento negado (sem cookie).
+    sendToOwnLog(entry)
+
+    // Modo avancado: o gtag ja roda com consentimento negado, sem cookie.
     if (config.consentMode === 'advanced') sendToGa4(entry)
     else if (consent.analytics) sendToGa4(entry)
 
     if (consent.ads) sendToMeta(entry)
-    else if (!hasDecision()) queue.push(entry)
+    else if (!hasDecision() && META_EVENTS[name]) metaQueue.push(entry)
 
     debugLog(entry.name, entry.params)
   } catch (error) {
@@ -118,12 +150,13 @@ export function track(name, params = {}, options = {}) {
   }
 }
 
-function flushQueue(consent) {
-  const pending = queue.splice(0, queue.length)
+function flushMetaQueue(consent) {
+  const pending = metaQueue.splice(0, metaQueue.length)
+  if (!consent.ads) return
 
   pending.forEach((entry) => {
     if (config.consentMode === 'basic' && consent.analytics) sendToGa4(entry)
-    if (consent.ads) sendToMeta(entry)
+    sendToMeta(entry)
   })
 }
 
@@ -133,18 +166,25 @@ function applyDecision(consent) {
   if (consent.analytics || config.consentMode === 'advanced') loadGa4()
   if (consent.ads) loadPixel({ external_id: getContext().user_id })
 
-  flushQueue(consent)
+  flushMetaQueue(consent)
 }
 
 export function startTracking() {
-  if (started || !config.enabled) return
+  if (started || !config.enabled || isOptedOut()) return
   started = true
 
   applyConsentDefaults()
   if (config.consentMode === 'advanced') loadGa4()
+  installFlushHooks()
 
   const consent = getConsent()
   if (consent.decided) applyDecision(consent)
 
   onConsentChange(applyDecision)
+  onOptOutChange((active) => {
+    if (!active) return
+    metaQueue.length = 0
+    updateConsentSignals({ analytics: false, ads: false })
+    flushEvents()
+  })
 }

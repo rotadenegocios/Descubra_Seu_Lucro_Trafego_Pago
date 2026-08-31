@@ -1,8 +1,10 @@
 // GERADO POR _shared/sync-tracking.mjs - NAO EDITE AQUI
+import { logEvents } from './logStore.js'
 import { metaEventName, sendMetaEvent } from './meta.js'
 
-const MAX_BODY_BYTES = 16000
-const RATE_LIMIT = 120
+const MAX_BODY_BYTES = 20000
+const MAX_EVENTS = 40
+const RATE_LIMIT = 60
 const RATE_WINDOW_MS = 60000
 const DEFAULT_ORIGIN_SUFFIXES = ['.vercel.app', 'gesieudo.com', 'localhost']
 
@@ -38,6 +40,7 @@ function originAllowed(request) {
   }
 }
 
+// Uma requisicao agora carrega um lote, entao o limite conta lotes por minuto.
 function withinRateLimit(ip) {
   const now = Date.now()
   const bucket = rateBuckets.get(ip)
@@ -69,28 +72,49 @@ export async function handleTrack(request, response) {
   const ip = clientIp(request)
   if (!withinRateLimit(ip)) return done(response)
 
-  let event
+  let payload
 
   try {
     const raw = typeof request.body === 'string' ? request.body : JSON.stringify(request.body || '')
     if (raw.length > MAX_BODY_BYTES) return done(response)
-    event = parseBody(request.body)
+    payload = parseBody(request.body)
   } catch {
     return done(response)
   }
 
-  if (!event?.event_name || !event.event_id) return done(response)
-  if (!metaEventName(event.event_name)) return done(response)
+  const incoming = Array.isArray(payload?.events) ? payload.events : [payload]
+  const events = incoming
+    .filter((event) => event?.event_name && event.event_id)
+    .slice(0, MAX_EVENTS)
 
-  // O consentimento vem do cliente e e revalidado aqui: sem aceite, nada sai.
-  if (event.consent?.ads !== true) return done(response)
+  if (!events.length) return done(response)
+
+  const salt = process.env.TRACKING_SALT || ''
+
+  // Log proprio: base legal de legitimo interesse, sem terceiros. Nao depende
+  // do aceite, mas o cliente ja nao envia nada de quem exerceu oposicao.
+  const logTask = logEvents({
+    events: events.filter((event) => event.channel !== 'meta'),
+    headers: request.headers,
+    salt,
+  }).catch(() => undefined)
+
+  // Meta: so com consentimento explicito, revalidado aqui.
+  const metaTasks = events
+    .filter(
+      (event) =>
+        event.channel === 'meta' && event.consent?.ads === true && metaEventName(event.event_name),
+    )
+    .map((event) =>
+      sendMetaEvent({
+        event,
+        clientIp: ip,
+        userAgent: request.headers['user-agent'] || '',
+      }).catch(() => undefined),
+    )
 
   try {
-    await sendMetaEvent({
-      event,
-      clientIp: ip,
-      userAgent: request.headers['user-agent'] || '',
-    })
+    await Promise.all([logTask, ...metaTasks])
   } catch {
     // Falha de envio nunca vira erro para a pagina.
   }

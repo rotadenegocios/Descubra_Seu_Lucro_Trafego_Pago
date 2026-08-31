@@ -49,11 +49,20 @@ export function metaEventName(name) {
   return META_EVENT_NAMES[name]
 }
 
-export async function sendMetaEvent({ event, clientIp, userAgent }) {
-  const datasetId = process.env.META_DATASET_ID
-  const token = process.env.META_CAPI_ACCESS_TOKEN
+function list(value) {
+  return String(value || '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+}
 
-  if (!datasetId || !token) return { skipped: 'sem_credenciais' }
+// Um ou mais datasets. Um unico token vale para todos; se houver mais de um
+// token, a ordem acompanha a dos datasets.
+export async function sendMetaEvent({ event, clientIp, userAgent }) {
+  const datasetIds = list(process.env.META_DATASET_ID)
+  const tokens = list(process.env.META_CAPI_ACCESS_TOKEN)
+
+  if (!datasetIds.length || !tokens.length) return { skipped: 'sem_credenciais' }
 
   const eventName = metaEventName(event.event_name)
   if (!eventName) return { skipped: 'evento_nao_mapeado' }
@@ -61,27 +70,40 @@ export async function sendMetaEvent({ event, clientIp, userAgent }) {
   const salt = process.env.TRACKING_SALT || ''
   const userData = event.user_data || {}
 
+  // O mesmo event_id vai para todos os datasets: a deduplicacao da Meta e por
+  // dataset, entao repetir o id nao mistura as contagens.
+  const eventPayload = {
+    event_name: eventName,
+    event_time: event.event_time || Math.floor(Date.now() / 1000),
+    event_id: event.event_id,
+    event_source_url: event.event_source_url,
+    action_source: 'website',
+    user_data: {
+      em: hash(userData.email),
+      ph: hashPhone(userData.phone),
+      external_id: hashId(event.user_id, salt),
+      fbp: userData.fbp || undefined,
+      fbc: userData.fbc || undefined,
+      client_ip_address: clientIp || undefined,
+      client_user_agent: userAgent || undefined,
+    },
+    custom_data: pickCustomData(event.params),
+  }
+
+  const results = await Promise.all(
+    datasetIds.map((datasetId, index) =>
+      postToDataset({ datasetId, token: tokens[index] || tokens[0], eventPayload }),
+    ),
+  )
+
+  const failed = results.filter((result) => result.error)
+  return failed.length ? { error: failed[0].error, sent: results.length - failed.length } : { ok: true }
+}
+
+async function postToDataset({ datasetId, token, eventPayload }) {
   const payload = {
     access_token: token,
-    data: [
-      {
-        event_name: eventName,
-        event_time: event.event_time || Math.floor(Date.now() / 1000),
-        event_id: event.event_id,
-        event_source_url: event.event_source_url,
-        action_source: 'website',
-        user_data: {
-          em: hash(userData.email),
-          ph: hashPhone(userData.phone),
-          external_id: hashId(event.user_id, salt),
-          fbp: userData.fbp || undefined,
-          fbc: userData.fbc || undefined,
-          client_ip_address: clientIp || undefined,
-          client_user_agent: userAgent || undefined,
-        },
-        custom_data: pickCustomData(event.params),
-      },
-    ],
+    data: [eventPayload],
     ...(process.env.META_TEST_EVENT_CODE
       ? { test_event_code: process.env.META_TEST_EVENT_CODE }
       : {}),
@@ -92,15 +114,12 @@ export async function sendMetaEvent({ event, clientIp, userAgent }) {
 
   try {
     // O token vai no corpo, nao na URL: querystring aparece em log de acesso.
-    const response = await fetch(
-      `https://graph.facebook.com/${GRAPH_VERSION}/${datasetId}/events`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-      },
-    )
+    const response = await fetch(`https://graph.facebook.com/${GRAPH_VERSION}/${datasetId}/events`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    })
 
     if (!response.ok) return { error: `meta_${response.status}` }
     return { ok: true }

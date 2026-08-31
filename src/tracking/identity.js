@@ -1,5 +1,6 @@
 // GERADO POR _shared/sync-tracking.mjs - NAO EDITE AQUI
 import { config } from './config.js'
+import { isOptedOut } from './optout.js'
 
 const UID_COOKIE = 'rn_uid'
 const FBC_COOKIE = 'rn_fbc'
@@ -34,6 +35,8 @@ function safeStorage(action, fallback) {
 }
 
 export function getUserId() {
+  if (isOptedOut()) return ''
+
   let id = readCookie(UID_COOKIE)
 
   if (!id) {

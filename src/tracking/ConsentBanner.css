@@ -33,9 +33,15 @@
   color: rgba(244, 246, 247, 0.78);
 }
 
-.consent-banner__text a {
+.consent-banner__text a,
+.consent-banner__text button {
+  padding: 0;
+  border: 0;
+  background: none;
   color: inherit;
+  font: inherit;
   text-decoration: underline;
+  cursor: pointer;
 }
 
 .consent-banner__actions {
