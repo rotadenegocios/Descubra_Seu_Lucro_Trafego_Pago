@@ -150,8 +150,9 @@ export default async function handler(request, response) {
   }
 
   const databaseUrl = getDatabaseUrl()
+  const webhookUrl = process.env.LEADS_WEBHOOK_URL
 
-  if (!databaseUrl && !process.env.LEADS_WEBHOOK_URL) {
+  if (!databaseUrl && !webhookUrl) {
     return respond(response, 503, { error: 'O registro de dados está temporariamente indisponível.' })
   }
 
@@ -167,12 +168,35 @@ export default async function handler(request, response) {
     submittedAt: new Date().toISOString(),
   }
 
-  try {
-    if (databaseUrl) await saveToNeon(payload, databaseUrl)
-    else await sendToWebhook(payload)
+  // O banco e a fonte da verdade e o webhook leva o lead ao CRM pelo n8n. Os dois
+  // rodam no mesmo envio: com o lead ja gravado, uma falha do CRM vira log e nao
+  // devolve erro para quem preencheu o formulario.
+  const destinations = []
 
-    return respond(response, 201, { ok: true })
-  } catch {
+  if (databaseUrl) {
+    destinations.push({ name: 'banco', critical: true, run: () => saveToNeon(payload, databaseUrl) })
+  }
+
+  if (webhookUrl) {
+    destinations.push({ name: 'webhook', critical: !databaseUrl, run: () => sendToWebhook(payload) })
+  }
+
+  const results = await Promise.allSettled(destinations.map((destination) => destination.run()))
+  let criticalFailure = false
+
+  results.forEach((result, index) => {
+    if (result.status === 'fulfilled') return
+
+    const destination = destinations[index]
+
+    console.error(`[leads] falha no destino "${destination.name}"`, result.reason)
+
+    if (destination.critical) criticalFailure = true
+  })
+
+  if (criticalFailure) {
     return respond(response, 502, { error: 'Não foi possível registrar os dados.' })
   }
+
+  return respond(response, 201, { ok: true })
 }
