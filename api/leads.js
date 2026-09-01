@@ -115,7 +115,14 @@ async function sendToWebhook(payload) {
       signal: controller.signal,
     })
 
-    if (!webhookResponse.ok) throw new Error('Webhook rejected the lead')
+    if (!webhookResponse.ok) {
+      // O corpo da resposta diz por que o CRM recusou, entao ele entra na mensagem
+      // do erro: sem isso o log so mostra que houve falha, nunca a causa.
+      const detail = await webhookResponse.text().catch(() => '')
+      throw new Error(
+        `Webhook rejected the lead (HTTP ${webhookResponse.status})${detail ? `: ${detail.slice(0, 500)}` : ''}`,
+      )
+    }
   } finally {
     clearTimeout(timeout)
   }
