@@ -1,6 +1,7 @@
 // GERADO POR _shared/sync-tracking.mjs - NAO EDITE AQUI
-import { currentCtaSource, markLeadSubmitted } from './behavior.js'
+import { currentCtaSource, markLeadSubmitted, reportExit, resetForPage } from './behavior.js'
 import { track } from './client.js'
+import { config } from './config.js'
 
 export { track, getContext, startTracking } from './client.js'
 export { TrackingProvider, useTracking } from './react.jsx'
@@ -10,6 +11,21 @@ export { getConsent, setConsent, hasDecision } from './consent.js'
 export { isOptedOut, setOptOut } from './optout.js'
 export { config } from './config.js'
 export { resolveApiPath } from './apiPath.js'
+
+// Chamado por paginas que trocam de rota sem recarregar (SPA). Fecha a
+// medicao da rota anterior e comeca a da nova.
+export function trackPageChange({ itemId = '', itemName = '' } = {}) {
+  if (!config.enabled) return
+
+  reportExit('navigation')
+  resetForPage({ itemId: itemId || config.siteId, itemName })
+
+  track('page_view', {
+    page_path: window.location.pathname,
+    page_location: window.location.href,
+    referrer: document.referrer,
+  })
+}
 
 // Chamado pelo modal quando o POST /api/leads responde 201.
 export function trackLead({ itemId, itemName, ctaSource, email, phone }) {

@@ -3,6 +3,12 @@ import { track } from './client.js'
 
 const SCROLL_STEPS = [25, 50, 75, 90, 100]
 
+let initialized = false
+let sectionObserver = null
+let heroObserver = null
+let pendingHero = null
+let measureScroll = () => {}
+
 const state = {
   startedAt: Date.now(),
   engagedMs: 0,
@@ -64,7 +70,17 @@ function watchScroll() {
     { passive: true },
   )
 
+  measureScroll = measure
   measure()
+}
+
+// Observa as secoes ja presentes e as que chegam depois: numa SPA a pagina
+// seguinte so entra no DOM apos a navegacao.
+function observeSectionsIn(root) {
+  if (!sectionObserver || root?.nodeType !== 1) return
+
+  if (root.matches?.('[class*="-section"]')) sectionObserver.observe(root)
+  root.querySelectorAll?.('[class*="-section"]').forEach((section) => sectionObserver.observe(section))
 }
 
 function watchSections() {
@@ -73,7 +89,7 @@ function watchSections() {
   const enteredAt = new Map()
   const timers = new Map()
 
-  const observer = new IntersectionObserver(
+  sectionObserver = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         const sectionId = sectionIdOf(entry.target)
@@ -110,27 +126,57 @@ function watchSections() {
     { threshold: 0.5 },
   )
 
-  document.querySelectorAll('[class*="-section"]').forEach((section) => observer.observe(section))
+  observeSectionsIn(document.body)
 }
 
-function watchHero(itemId, itemName) {
-  const hero = document.querySelector('.sales-hero')
-  if (!hero || !('IntersectionObserver' in window)) return
+function observeHeroIn(root) {
+  if (!pendingHero || !heroObserver || root?.nodeType !== 1) return
 
-  const observer = new IntersectionObserver(
+  const hero = root.matches?.('.sales-hero') ? root : root.querySelector?.('.sales-hero')
+  if (hero) heroObserver.observe(hero)
+}
+
+// Rearmavel: cada pagina do funil tem o seu proprio view_item.
+function watchHero(itemId, itemName) {
+  if (!('IntersectionObserver' in window)) return
+
+  heroObserver?.disconnect()
+  pendingHero = { itemId, itemName }
+
+  heroObserver = new IntersectionObserver(
     (entries) => {
-      if (!entries.some((entry) => entry.isIntersecting)) return
-      observer.disconnect()
+      if (!entries.some((entry) => entry.isIntersecting) || !pendingHero) return
+
+      const { itemId: id, itemName: name } = pendingHero
+      pendingHero = null
+      heroObserver.disconnect()
+
       track(
         'view_item',
-        { item_id: itemId, item_name: itemName },
-        { metaParams: { content_ids: [itemId], content_name: itemName, content_type: 'product' } },
+        { item_id: id, item_name: name },
+        { metaParams: { content_ids: [id], content_name: name, content_type: 'product' } },
       )
     },
     { threshold: 0.4 },
   )
 
-  observer.observe(hero)
+  observeHeroIn(document.body)
+}
+
+// Uma unica escuta do DOM alimenta secoes e hero que chegam depois.
+function watchDom() {
+  if (!('MutationObserver' in window)) return
+
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        observeSectionsIn(node)
+        observeHeroIn(node)
+      })
+    })
+  })
+
+  observer.observe(document.body, { childList: true, subtree: true })
 }
 
 function watchClicks() {
@@ -277,25 +323,25 @@ function watchForm() {
   })
 }
 
+export function reportExit(exitType) {
+  if (state.exited) return
+  state.exited = true
+
+  track('page_exit', {
+    exit_type: exitType,
+    time_on_page_ms: Date.now() - state.startedAt,
+    engaged_time_ms: engagedMs(),
+    max_scroll: state.maxScroll,
+    sections_viewed: state.sectionsViewed.size,
+    last_section: state.lastSection,
+  })
+}
+
 function watchExit() {
-  function report(exitType) {
-    if (state.exited) return
-    state.exited = true
-
-    track('page_exit', {
-      exit_type: exitType,
-      time_on_page_ms: Date.now() - state.startedAt,
-      engaged_time_ms: engagedMs(),
-      max_scroll: state.maxScroll,
-      sections_viewed: state.sectionsViewed.size,
-      last_section: state.lastSection,
-    })
-  }
-
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
       state.engagedMs += Date.now() - state.lastVisibleAt
-      report('hidden')
+      reportExit('hidden')
       return
     }
 
@@ -303,7 +349,28 @@ function watchExit() {
     state.exited = false
   })
 
-  window.addEventListener('pagehide', () => report('pagehide'))
+  window.addEventListener('pagehide', () => reportExit('pagehide'))
+}
+
+// Navegacao de SPA: a pagina seguinte recomeca a contagem sem recarregar.
+export function resetForPage({ itemId, itemName }) {
+  const now = Date.now()
+
+  state.startedAt = now
+  state.lastVisibleAt = now
+  state.engagedMs = 0
+  state.maxScroll = 0
+  state.reachedSteps = new Set()
+  state.sectionsViewed = new Set()
+  state.lastSection = ''
+  state.lastCtaSource = ''
+  state.form = null
+  state.leadSubmitted = false
+  state.exited = false
+
+  watchHero(itemId, itemName)
+  observeSectionsIn(document.body)
+  measureScroll()
 }
 
 export function markLeadSubmitted() {
@@ -315,9 +382,17 @@ export function currentCtaSource() {
 }
 
 export function initBehavior({ itemId, itemName }) {
+  // Os listeners sao globais: registrar duas vezes duplicaria todo evento.
+  if (initialized) {
+    resetForPage({ itemId, itemName })
+    return
+  }
+  initialized = true
+
   watchScroll()
   watchSections()
   watchHero(itemId, itemName)
+  watchDom()
   watchClicks()
   watchDetails()
   watchForm()
