@@ -51,20 +51,30 @@ async function saveToNeon(payload, databaseUrl) {
   const sql = neon(databaseUrl)
 
   if (!tableInitialization) {
-    tableInitialization = sql`
-      CREATE TABLE IF NOT EXISTS purchase_leads (
-        id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-        name VARCHAR(120) NOT NULL,
-        email VARCHAR(254) NOT NULL,
-        phone VARCHAR(16) NOT NULL,
-        product_id VARCHAR(80) NOT NULL CHECK (product_id = 'descubra-seu-lucro'),
-        product_name VARCHAR(120),
-        page_url TEXT,
-        cta_source VARCHAR(50),
-        utm JSONB NOT NULL DEFAULT '{}'::jsonb,
-        submitted_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-      )
-    `.catch((error) => {
+    tableInitialization = (async () => {
+      await sql`
+        CREATE TABLE IF NOT EXISTS purchase_leads (
+          id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+          name VARCHAR(120) NOT NULL,
+          email VARCHAR(254) NOT NULL,
+          phone VARCHAR(16) NOT NULL,
+          product_id VARCHAR(80) NOT NULL,
+          product_name VARCHAR(120),
+          page_url TEXT,
+          cta_source VARCHAR(50),
+          utm JSONB NOT NULL DEFAULT '{}'::jsonb,
+          submitted_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+      `
+
+      // A rota valida o productId antes de persistir. Uma versao anterior criou
+      // esta tabela compartilhada com um CHECK fixo para outro produto, o que
+      // fazia o PostgreSQL rejeitar leads validos do Descubra Seu Lucro.
+      await sql`
+        ALTER TABLE purchase_leads
+        DROP CONSTRAINT IF EXISTS purchase_leads_product_id_check
+      `
+    })().catch((error) => {
       tableInitialization = undefined
       throw error
     })
